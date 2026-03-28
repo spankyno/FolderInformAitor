@@ -1,0 +1,5 @@
+{
+  "name": "Folder InformAitor",
+  "description": "Visualiza, analiza y exporta cualquier estructura de carpetas desde local, GitHub o archivos ZIP.",
+  "requestFramePermissions": []
+}
