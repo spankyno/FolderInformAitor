@@ -25,7 +25,6 @@ async function startServer() {
 
       // If no branch is specified, fetch repo info to get the default branch
       if (!targetBranch || targetBranch === "main") {
-        console.log(`Fetching repo info for ${owner}/${repo} to find default branch...`);
         const repoInfoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
           headers: {
             "User-Agent": "Folder-Tree-Visualizer-App",
@@ -36,16 +35,14 @@ async function startServer() {
         if (repoInfoRes.ok) {
           const repoData = await repoInfoRes.json();
           targetBranch = repoData.default_branch;
-          console.log(`Default branch detected: ${targetBranch}`);
         } else if (!targetBranch) {
-          targetBranch = "main"; // Fallback if repo info fails
+          targetBranch = "main";
         }
       }
 
-      const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${targetBranch}?recursive=1`;
-      console.log(`Proxying request to: ${url}`);
+      const githubUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${targetBranch}?recursive=1`;
       
-      const response = await fetch(url, {
+      const response = await fetch(githubUrl, {
         headers: {
           "User-Agent": "Folder-Tree-Visualizer-App",
           "Accept": "application/vnd.github.v3+json",
@@ -53,9 +50,7 @@ async function startServer() {
       });
 
       if (!response.ok) {
-        // If the detected/specified branch fails and it was 'main', try 'master' as last resort
         if (response.status === 404 && targetBranch === "main") {
-          console.log("Main branch not found, trying master...");
           const masterUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`;
           const masterResponse = await fetch(masterUrl, {
             headers: {
@@ -77,7 +72,6 @@ async function startServer() {
       const data = await response.json();
       res.json(data);
     } catch (error: any) {
-      console.error("Proxy error:", error);
       res.status(500).json({ error: error.message || "Internal server error" });
     }
   });
