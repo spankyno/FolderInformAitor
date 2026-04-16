@@ -43,10 +43,13 @@ export const loadFromZip = async (file: File): Promise<FileSystemItem> => {
   return root;
 };
 
-export const loadFromGitHub = async (repoUrl: string, branch = 'main'): Promise<FileSystemItem> => {
+export const loadFromGitHub = async (repoUrl: string, branch = ''): Promise<FileSystemItem> => {
   const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (!match) throw new Error('URL de GitHub no válida');
-  const [_, owner, repo] = match;
+  
+  // Clean up owner and repo names (remove trailing slashes or .git)
+  const owner = match[1].replace(/\/$/, '');
+  const repo = match[2].replace(/\/$/, '').replace(/\.git$/, '');
 
   // Use our server-side proxy to avoid CORS and connection resets
   const response = await fetch(`/api/github-proxy?owner=${owner}&repo=${repo}&branch=${branch}`);
