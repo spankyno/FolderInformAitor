@@ -20,11 +20,31 @@ async function startServer() {
       return res.status(400).json({ error: "Owner and repo are required" });
     }
 
-    const targetBranch = branch || "main";
-    const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${targetBranch}?recursive=1`;
-
     try {
+      let targetBranch = branch as string;
+
+      // If no branch is specified, fetch repo info to get the default branch
+      if (!targetBranch || targetBranch === "main") {
+        console.log(`Fetching repo info for ${owner}/${repo} to find default branch...`);
+        const repoInfoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+          headers: {
+            "User-Agent": "Folder-Tree-Visualizer-App",
+            "Accept": "application/vnd.github.v3+json",
+          }
+        });
+
+        if (repoInfoRes.ok) {
+          const repoData = await repoInfoRes.json();
+          targetBranch = repoData.default_branch;
+          console.log(`Default branch detected: ${targetBranch}`);
+        } else if (!targetBranch) {
+          targetBranch = "main"; // Fallback if repo info fails
+        }
+      }
+
+      const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${targetBranch}?recursive=1`;
       console.log(`Proxying request to: ${url}`);
+      
       const response = await fetch(url, {
         headers: {
           "User-Agent": "Folder-Tree-Visualizer-App",
@@ -33,7 +53,7 @@ async function startServer() {
       });
 
       if (!response.ok) {
-        // If main fails, try master as a fallback
+        // If the detected/specified branch fails and it was 'main', try 'master' as last resort
         if (response.status === 404 && targetBranch === "main") {
           console.log("Main branch not found, trying master...");
           const masterUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`;
@@ -50,7 +70,7 @@ async function startServer() {
           }
         }
         
-        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        const errorData = await response.json().catch(() => ({ message: "No se pudo encontrar el contenido del repositorio." }));
         return res.status(response.status).json(errorData);
       }
 
