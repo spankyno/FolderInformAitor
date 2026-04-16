@@ -48,10 +48,14 @@ export const loadFromGitHub = async (repoUrl: string, branch = 'main'): Promise<
   if (!match) throw new Error('URL de GitHub no válida');
   const [_, owner, repo] = match;
 
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
+  // Use our server-side proxy to avoid CORS and connection resets
+  const response = await fetch(`/api/github-proxy?owner=${owner}&repo=${repo}&branch=${branch}`);
+  
   if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
     if (response.status === 403) throw new Error('Límite de API de GitHub excedido o repositorio privado');
-    throw new Error('No se pudo cargar el repositorio. Verifica la URL y la rama.');
+    if (response.status === 404) throw new Error(`No se encontró el repositorio o la rama "${branch}".`);
+    throw new Error(errorData.message || 'No se pudo cargar el repositorio. Verifica la URL.');
   }
 
   const data = await response.json();
