@@ -551,7 +551,7 @@ export default function App() {
                   <Mail size={16} className="text-blue-500" /> blog.cottage627@passinbox.com
                 </li>
                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Globe size={16} className="text-blue-500" /> <a href="http://aitorblog.infinityfreeapp.com" target="_blank" rel="noreferrer" className="hover:text-blue-600 underline decoration-blue-200">aitorblog.infinityfreeapp.com</a>
+                  <Globe size={16} className="text-blue-500" /> <a href="https://aitorsanchez.pages.dev/" target="_blank" rel="noreferrer" className="hover:text-blue-600 underline decoration-blue-200">aitorsanchez.pages.dev</a>
                 </li>
                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
                   <ExternalLink size={16} className="text-blue-500" /> <a href="https://aitorhub.vercel.app/" className="hover:text-blue-600 underline decoration-blue-200">Más apps</a>
